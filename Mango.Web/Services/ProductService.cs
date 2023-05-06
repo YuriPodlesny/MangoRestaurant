@@ -1,0 +1,69 @@
+﻿using Mango.Web.Models;
+using Mango.Web.Services.IServices;
+
+namespace Mango.Web.Services
+{
+    public class ProductService : BaseService, IProductService
+    {
+        private readonly IHttpClientFactory _clientFactory;
+        //private string productUrl;
+
+        public ProductService(IHttpClientFactory clientFactory/*, IConfiguration configuration*/) : base(clientFactory) 
+        {
+            _clientFactory = clientFactory;
+            //productUrl = configuration.GetValue<string>("ServiceUrls:ProductAPI");
+        }
+
+        public async Task<T> CreateProductAsync<T>(ProductDTO productDTO)
+        {
+            return await this.SentAsync<T>(new ApiRequest()
+            {
+                ApiType = SD.ApiType.POST,
+                Data = productDTO,
+                Url = SD.ProductAPIBase + "api/products",
+                AccessToken = ""
+            });
+        }
+
+        public async Task<T> DeleteProductAsync<T>(int id)
+        {
+            return await this.SentAsync<T>(new ApiRequest()
+            {
+                ApiType = SD.ApiType.DELETE,
+                Url = SD.ProductAPIBase + "api/products/" + id,
+                AccessToken = ""
+            });
+        }
+
+        public async Task<T> GetAllProductsAsunc<T>()
+        {
+            return await this.SentAsync<T>(new ApiRequest()
+            {
+                ApiType = SD.ApiType.GET,
+                Url = SD.ProductAPIBase + "api/products",
+                AccessToken = ""
+            });
+        }
+
+        public async Task<T> GetProductByIdAsunc<T>(int id)
+        {
+            return await this.SentAsync<T>(new ApiRequest()
+            {
+                ApiType = SD.ApiType.GET,
+                Url = SD.ProductAPIBase + "api/products/" + id,
+                AccessToken = ""
+            });
+        }
+
+        public async Task<T> UpdateProductAsync<T>(ProductDTO productDTO)
+        {
+            return await this.SentAsync<T>(new ApiRequest()
+            {
+                ApiType = SD.ApiType.PUT,
+                Data = productDTO,
+                Url = SD.ProductAPIBase + "api/products",
+                AccessToken = ""
+            });
+        }
+    }
+}
