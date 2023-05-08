@@ -2,9 +2,9 @@
 
 namespace Mango.Web.Models
 {
-    public class ProductDTO
+    public class ProductDto
     {
-        public ProductDTO() 
+        public ProductDto() 
         {
             Count = 1;
         }
