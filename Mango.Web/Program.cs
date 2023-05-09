@@ -6,6 +6,11 @@ using Microsoft.AspNetCore.Authentication;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddHttpClient<IProductService, ProductService>();
+builder.Services.AddHttpClient<ICartService, CartService>();
+
+builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<ICartService, CartService>();
+
 SD.ProductAPIBase = builder.Configuration["ServiceUrls:ProductAPI"];
 SD.ShoppingCartAPIBase = builder.Configuration["ServiceUrls:ShoppingCartAPI"];
 
@@ -32,8 +37,6 @@ builder.Services.AddAuthentication(option =>
         options.Scope.Add("mango");
         options.SaveTokens = true;
     });
-
-builder.Services.AddScoped<IProductService, ProductService>();
 
 var app = builder.Build();
 
