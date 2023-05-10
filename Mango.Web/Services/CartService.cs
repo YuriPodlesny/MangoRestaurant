@@ -30,7 +30,7 @@ namespace Mango.Web.Services
                 ApiType = SD.ApiType.GET,
                 Url = SD.ShoppingCartAPIBase + "/api/cart/GetCart/" + userId,
                 AccessToken = token
-            })
+            });
         }
 
         public async Task<T> RemoveFromCartAsunc<T>(int cartId, string token = null)

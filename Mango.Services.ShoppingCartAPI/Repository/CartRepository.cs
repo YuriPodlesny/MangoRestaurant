@@ -36,7 +36,7 @@ namespace Mango.Services.ShoppingCartAPI.Repository
             Cart cart = _mapper.Map<Cart>(cartDto);
 
             //check if product exists in database, if not create it!
-            var prodInDb = _db.Products.FirstOrDefaultAsync(u => u.ProductId == cartDto.CartDetails.FirstOrDefault().ProductId);
+            var prodInDb = await _db.Products.FirstOrDefaultAsync(u => u.ProductId == cartDto.CartDetails.FirstOrDefault().ProductId);
             if (prodInDb == null)
             {
                 _db.Products.Add(cart.CartDetails.FirstOrDefault().Product);
@@ -58,10 +58,10 @@ namespace Mango.Services.ShoppingCartAPI.Repository
             {
                 //if header is not null
                 //check if details has same product
-                var CartDetailsFromDb = await _db.CartDetails.AsNoTracking().FirstOrDefaultAsync(
+                var cartDetailsFromDb = await _db.CartDetails.AsNoTracking().FirstOrDefaultAsync(
                     u => u.ProductId == cart.CartDetails.FirstOrDefault().ProductId &&
                     u.CartHeaderId == cartHeaderFromDb.CartHeaderId);
-                if (CartDetailsFromDb == null)
+                if (cartDetailsFromDb == null)
                 {
                     //create details
                     cart.CartDetails.FirstOrDefault().CartHeaderId = cartHeaderFromDb.CartHeaderId;
@@ -73,7 +73,9 @@ namespace Mango.Services.ShoppingCartAPI.Repository
                 {
                     //update the count / cart details
                     cart.CartDetails.FirstOrDefault().Product = null;
-                    cart.CartDetails.FirstOrDefault().Count += CartDetailsFromDb.Count;
+                    cart.CartDetails.FirstOrDefault().Count += cartDetailsFromDb.Count;
+                    cart.CartDetails.FirstOrDefault().CartDetailsId = cartDetailsFromDb.CartDetailsId;
+                    cart.CartDetails.FirstOrDefault().CartHeaderId = cartDetailsFromDb.CartHeaderId;
                     _db.CartDetails.Update(cart.CartDetails.FirstOrDefault());
                     await _db.SaveChangesAsync();
                 }

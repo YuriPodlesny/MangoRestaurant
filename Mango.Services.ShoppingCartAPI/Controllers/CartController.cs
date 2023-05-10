@@ -1,5 +1,4 @@
-﻿using Azure;
-using Mango.Services.ShoppingCartAPI.Models.Dto;
+﻿using Mango.Services.ShoppingCartAPI.Models.Dto;
 using Mango.Services.ShoppingCartAPI.Repository;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,14 +11,14 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
         private readonly ICartRepository _cartRepository;
         private readonly ResponseDto _responseDto;
 
-        public CartController(ICartRepository cartRepository, ResponseDto responseDto)
+        public CartController(ICartRepository cartRepository)
         {
             _cartRepository = cartRepository;
-            _responseDto = responseDto;
+            _responseDto = new ResponseDto();
         }
 
         [HttpGet("GetCart/{userId}")]
-        public async Task<ActionResult<ResponseDto>> GetCart(string userId)
+        public async Task<object> GetCart(string userId)
         {
             try
             {
@@ -36,7 +35,7 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
         }
 
         [HttpPost("AddCart")]
-        public async Task<ActionResult<ResponseDto>> AddCart(CartDto cartDto)
+        public async Task<object> AddCart(CartDto cartDto)
         {
             try
             {
@@ -53,7 +52,7 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
         }
 
         [HttpPost("UpdateCart")]
-        public async Task<ActionResult<ResponseDto>> UpdateCart(CartDto cartDto)
+        public async Task<object> UpdateCart(CartDto cartDto)
         {
             try
             {
@@ -70,7 +69,7 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
         }
 
         [HttpPost("RemoveCart")]
-        public async Task<ActionResult<ResponseDto>> RemoveCart([FromBody]int cartId)
+        public async Task<object> RemoveCart([FromBody] int cartId)
         {
             try
             {
@@ -87,7 +86,7 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
         }
 
         [HttpPost("ClearCart")]
-        public async Task<ActionResult<ResponseDto>> ClearCart([FromBody]string userId)
+        public async Task<object> ClearCart([FromBody] string userId)
         {
             try
             {
@@ -96,7 +95,7 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
             }
             catch (Exception ex)
             {
-                _responseDto.IsSuccess =false;
+                _responseDto.IsSuccess = false;
                 _responseDto.ErrorMassages = new List<string> { ex.Message };
                 throw;
             }

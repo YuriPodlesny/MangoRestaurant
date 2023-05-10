@@ -1,6 +1,5 @@
-using Mango.Servrces.ProductAPI;
-using Mango.Servrces.ProductAPI.DbContexts;
-using Mango.Servrces.ProductAPI.Repository;
+using Mango.Services.CouponAPI;
+using Mango.Services.CouponAPI.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -13,7 +12,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 });
 
 builder.Services.AddAutoMapper(typeof(MappingConfig));
-builder.Services.AddScoped<IProductRepository, ProductRepository>();
+//builder.Services.AddScoped<ICartRepository, CartRepository>();
 
 builder.Services.AddControllers();
 
@@ -71,6 +70,7 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
+// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
