@@ -11,14 +11,16 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
     public class CartAPIController : Controller
     {
         private readonly ICartRepository _cartRepository;
+        private readonly ICouponRepository _couponRepository;
         private readonly IMessageBus _messageBus;
-        private readonly ResponseDto _responseDto;
+        private readonly ResponseDto _response;
 
-        public CartAPIController(ICartRepository cartRepository, IMessageBus messageBus)
+        public CartAPIController(ICartRepository cartRepository, IMessageBus messageBus, ICouponRepository couponRepository)
         {
             _cartRepository = cartRepository;
-            _responseDto = new ResponseDto();
+            _response = new ResponseDto();
             _messageBus = messageBus;
+            _couponRepository = couponRepository;
         }
 
         [HttpGet("GetCart/{userId}")]
@@ -27,15 +29,15 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
             try
             {
                 CartDto cartDto = await _cartRepository.GetCartByUserId(userId);
-                _responseDto.Result = cartDto;
+                _response.Result = cartDto;
             }
             catch (Exception ex)
             {
-                _responseDto.IsSuccess = false;
-                _responseDto.ErrorMassages = new List<string>() { ex.ToString() };
+                _response.IsSuccess = false;
+                _response.ErrorMassages = new List<string>() { ex.ToString() };
                 throw;
             }
-            return _responseDto;
+            return _response;
         }
 
         [HttpPost("AddCart")]
@@ -44,15 +46,15 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
             try
             {
                 CartDto cartDt = await _cartRepository.CreateUpdateCart(cartDto);
-                _responseDto.Result = cartDt;
+                _response.Result = cartDt;
             }
             catch (Exception ex)
             {
-                _responseDto.IsSuccess = false;
-                _responseDto.ErrorMassages = new List<string>() { ex.ToString() };
+                _response.IsSuccess = false;
+                _response.ErrorMassages = new List<string>() { ex.ToString() };
                 throw;
             }
-            return _responseDto;
+            return _response;
         }
 
         [HttpPost("UpdateCart")]
@@ -61,15 +63,15 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
             try
             {
                 CartDto cartDt = await _cartRepository.CreateUpdateCart(cartDto);
-                _responseDto.Result = cartDt;
+                _response.Result = cartDt;
             }
             catch (Exception ex)
             {
-                _responseDto.IsSuccess = false;
-                _responseDto.ErrorMassages = new List<string>() { ex.ToString() };
+                _response.IsSuccess = false;
+                _response.ErrorMassages = new List<string>() { ex.ToString() };
                 throw;
             }
-            return _responseDto;
+            return _response;
         }
 
         [HttpPost("RemoveCart")]
@@ -78,15 +80,15 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
             try
             {
                 bool isSuccess = await _cartRepository.RemoveFromCart(cartId);
-                _responseDto.Result = isSuccess;
+                _response.Result = isSuccess;
             }
             catch (Exception ex)
             {
-                _responseDto.IsSuccess = false;
-                _responseDto.ErrorMassages = new List<string> { ex.ToString() };
+                _response.IsSuccess = false;
+                _response.ErrorMassages = new List<string> { ex.ToString() };
                 throw;
             }
-            return _responseDto;
+            return _response;
         }
 
         [HttpPost("ClearCart")]
@@ -95,15 +97,15 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
             try
             {
                 bool isSuccess = await _cartRepository.ClearCart(userId);
-                _responseDto.Result = isSuccess;
+                _response.Result = isSuccess;
             }
             catch (Exception ex)
             {
-                _responseDto.IsSuccess = false;
-                _responseDto.ErrorMassages = new List<string> { ex.ToString() };
+                _response.IsSuccess = false;
+                _response.ErrorMassages = new List<string> { ex.ToString() };
                 throw;
             }
-            return _responseDto;
+            return _response;
         }
 
         [HttpPost("ApplyCoupon")]
@@ -112,15 +114,15 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
             try
             {
                 bool isSuccess = await _cartRepository.ApplyCoupon(cartDto.CartHeader.UserId, cartDto.CartHeader.CouponCode);
-                _responseDto.Result = isSuccess;
+                _response.Result = isSuccess;
             }
             catch (Exception ex)
             {
-                _responseDto.IsSuccess = false;
-                _responseDto.ErrorMassages = new List<string> { ex.ToString() };
+                _response.IsSuccess = false;
+                _response.ErrorMassages = new List<string> { ex.ToString() };
                 throw;
             }
-            return _responseDto;
+            return _response;
         }
 
         [HttpPost("RemoveCoupon")]
@@ -129,15 +131,15 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
             try
             {
                 bool isSuccess = await _cartRepository.RemoveCoupon(userId);
-                _responseDto.Result = isSuccess;
+                _response.Result = isSuccess;
             }
             catch (Exception ex)
             {
-                _responseDto.IsSuccess = false;
-                _responseDto.ErrorMassages = new List<string> { ex.ToString() };
+                _response.IsSuccess = false;
+                _response.ErrorMassages = new List<string> { ex.ToString() };
                 throw;
             }
-            return _responseDto;
+            return _response;
         }
 
         [HttpPost("Checkout")]
@@ -150,17 +152,30 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
                 {
                     return BadRequest();
                 }
+
+                if (!string.IsNullOrEmpty(checkoutHeader.CouponCode))
+                {
+                    CouponDto coupon = await _couponRepository.GetCoupon(checkoutHeader.CouponCode);
+                    if(checkoutHeader.DiscountTotal != coupon.DiscountAmount)
+                    {
+                        _response.IsSuccess = false;
+                        _response.ErrorMassages = new List<string>() { "Coupon Price has changed, please confirm" };
+                        _response.DisplayMessage = "Coupon Price has changed, please confirm";
+                        return _response;
+                    }
+                }
+
                 checkoutHeader.CartDetails = cartDto.CartDetails;
                 //logic to add message to process order.
                 await _messageBus.PublishMessage(checkoutHeader, "checkoutmessagetopic");
             }
             catch (Exception ex)
             {
-                _responseDto.IsSuccess = false;
-                _responseDto.ErrorMassages = new List<string> { ex.ToString() };
+                _response.IsSuccess = false;
+                _response.ErrorMassages = new List<string> { ex.ToString() };
                 throw;
             }
-            return _responseDto;
+            return _response;
         }
     }
 }

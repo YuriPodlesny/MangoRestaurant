@@ -1,4 +1,6 @@
 using Mango.Services.OrderAPI.DbContexts;
+using Mango.Services.OrderAPI.Extension;
+using Mango.Services.OrderAPI.Messaging;
 using Mango.Services.OrderAPI.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -17,6 +19,7 @@ builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 var optionBilder = new DbContextOptionsBuilder<ApplicationDbContext>();
 optionBilder.UseSqlServer(builder.Configuration.GetConnectionString("DefaultSQLConnection"));
 builder.Services.AddSingleton(new OrderRepository(optionBilder.Options));
+builder.Services.AddSingleton<IAzureServiceBusConsumer, AzureServiceBusConsumer>();
 
 builder.Services.AddControllers();
 
@@ -86,5 +89,5 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
+app.UseAzureServiceBusConsumer();
 app.Run();

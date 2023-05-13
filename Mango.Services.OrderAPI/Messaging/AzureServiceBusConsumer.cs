@@ -4,20 +4,54 @@ using Mango.Services.OrderAPI.Models;
 using Mango.Services.OrderAPI.Repository;
 using Newtonsoft.Json;
 using System.Text;
-using System.Text.Json.Serialization;
 
 namespace Mango.Services.OrderAPI.Messaging
 {
-    public class AsureServiceBusCunsumer
+    public class AzureServiceBusConsumer : IAzureServiceBusConsumer
     {
+        private readonly string serviceBusConnectionString;
+        private readonly string subscriptionCheckOut;
+        private readonly string checkoutMessageTopic;
         private readonly OrderRepository _orderRepository;
 
-        public AsureServiceBusCunsumer(OrderRepository orderRepository)
+        private ServiceBusProcessor checkOutProcessor;
+
+        private readonly IConfiguration _configuration;
+
+        public AzureServiceBusConsumer(OrderRepository orderRepository, IConfiguration configuration)
         {
             _orderRepository = orderRepository;
+            _configuration = configuration;
+
+            serviceBusConnectionString = configuration.GetValue<string>("ServiceBusConnectionString");
+            subscriptionCheckOut = configuration.GetValue<string>("SubscriptionCheckOut");
+            checkoutMessageTopic = configuration.GetValue<string>("CheckoutMessageTopic");
+
+            var client = new ServiceBusClient(serviceBusConnectionString);
+
+            checkOutProcessor = client.CreateProcessor(checkoutMessageTopic, subscriptionCheckOut);
         }
 
-        private async Task OnecheckOutMassegeReceive(ProcessMessageEventArgs args)
+        public async Task Start()
+        {
+            checkOutProcessor.ProcessMessageAsync += OneCheckOutMassegeReceive;
+            checkOutProcessor.ProcessErrorAsync += ErrorHandler;
+            await checkOutProcessor.StartProcessingAsync();
+        }
+
+        public async Task Stop()
+        {
+            await checkOutProcessor.StopProcessingAsync();
+            await checkOutProcessor.DisposeAsync();
+        }
+
+        Task ErrorHandler(ProcessErrorEventArgs args) 
+        {
+            Console.WriteLine(args.Exception.ToString());
+            return Task.CompletedTask;
+        }
+
+        private async Task OneCheckOutMassegeReceive(ProcessMessageEventArgs args)
         {
             var message = args.Message;
             var body = Encoding.UTF8.GetString(message.Body);
