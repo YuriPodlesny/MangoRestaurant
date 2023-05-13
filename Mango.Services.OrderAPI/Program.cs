@@ -1,3 +1,4 @@
+using Mango.MessageBus;
 using Mango.Services.OrderAPI.DbContexts;
 using Mango.Services.OrderAPI.Extension;
 using Mango.Services.OrderAPI.Messaging;
@@ -20,6 +21,7 @@ var optionBilder = new DbContextOptionsBuilder<ApplicationDbContext>();
 optionBilder.UseSqlServer(builder.Configuration.GetConnectionString("DefaultSQLConnection"));
 builder.Services.AddSingleton(new OrderRepository(optionBilder.Options));
 builder.Services.AddSingleton<IAzureServiceBusConsumer, AzureServiceBusConsumer>();
+builder.Services.AddSingleton<IMessageBus, AsureServiceBusMessageBus>();
 
 builder.Services.AddControllers();
 
