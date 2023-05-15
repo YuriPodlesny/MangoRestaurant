@@ -1,1 +1,1 @@
-# MangoRestaurant
+# MangoRestaurant учебный проект.
